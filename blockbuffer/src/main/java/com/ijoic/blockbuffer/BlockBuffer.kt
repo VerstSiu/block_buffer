@@ -196,15 +196,29 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
    *
    * @param content byte content.
    */
-  fun write(content: ByteArray) {
-    if (content.isEmpty()) {
-      return
+  fun write(content: ByteArray): Int {
+    return write(content, 0, content.size)
+  }
+
+  /**
+   * Write byte content.
+   *
+   * @param content byte content.
+   * @param offset offset.
+   * @param length length.
+   */
+  fun write(content: ByteArray, @IntRange(from = 0) offset: Int, @IntRange(from = 0) length: Int): Int {
+    val srcSize = content.size
+
+    if (srcSize == 0 || length == 0 || offset >= srcSize) {
+      return 0
     }
     var blockIndex = this.lastBlockIndex
     var end = this.end
 
-    val srcSize = content.size
-    var srcIndex = 0
+    var srcIndex = offset
+    val srcEnd = Math.min(srcSize, offset + length)
+
     var writeSize: Int
     var writeIndex: Int
 
@@ -227,12 +241,14 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
       end += writeSize
       srcIndex += writeSize
 
-      if (srcIndex >= srcSize) {
+      if (srcIndex >= srcEnd) {
         break
       }
     }
     this.lastBlockIndex = blockIndex
     this.end = end
+
+    return srcEnd - offset
   }
 
   private fun getBlock(@IntRange(from = 0) index: Int): ByteArray {

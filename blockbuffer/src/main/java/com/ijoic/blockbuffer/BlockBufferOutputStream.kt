@@ -33,4 +33,19 @@ class BlockBufferOutputStream(private val buffer: BlockBuffer): OutputStream() {
     buffer.writeBit(currentIndex++, b)
   }
 
+  override fun write(b: ByteArray?) {
+    if (b == null) {
+      return
+    }
+    currentIndex += b.size
+    buffer.write(b)
+  }
+
+  override fun write(b: ByteArray?, off: Int, len: Int) {
+    if (b == null) {
+      return
+    }
+    currentIndex += buffer.write(b, off, len)
+  }
+
 }
