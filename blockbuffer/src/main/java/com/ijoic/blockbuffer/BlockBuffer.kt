@@ -18,6 +18,7 @@
 package com.ijoic.blockbuffer
 
 import android.support.annotation.IntRange
+import java.util.*
 
 /**
  * Block buffer.
@@ -39,7 +40,7 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
    *
    * @param func read callback: fun(byteContent, size).
    */
-  fun read(func: (ByteArray, Int) -> Unit) {
+  fun read(func: (ByteArray) -> Unit) {
     val blockIndex = lastBlockIndex
     val offset = this.offset
 
@@ -47,8 +48,17 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
 
     while(true) {
       when {
-        readIndex < blockIndex -> func.invoke(getBlock(readIndex), blockSize)
-        readIndex == blockIndex -> { func.invoke(getBlock(readIndex), offset + 1); return }
+        readIndex < blockIndex -> func.invoke(getBlock(readIndex))
+        readIndex == blockIndex -> {
+          val block = getBlock(readIndex)
+
+          if (offset + 1 == blockSize) {
+            func.invoke(block)
+          } else if (offset >= 0) {
+            func.invoke(Arrays.copyOfRange(block, 0, offset + 1))
+          }
+          return
+        }
         else -> return
       }
       ++readIndex
@@ -133,15 +143,8 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
   override fun toString(): String {
     val sb = StringBuilder()
 
-    read { it, size ->
-      if (it.size == size) {
-        sb.append(it)
-      } else {
-        for (index in 0 until size) {
-          sb.append(it[index])
-        }
-      }
-    }
+    read { sb.append(it) }
+
     val result = sb.toString()
     sb.delete(0, sb.length)
     return result
