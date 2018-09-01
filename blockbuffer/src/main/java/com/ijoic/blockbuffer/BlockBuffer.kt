@@ -29,7 +29,7 @@ import java.util.*
  * @author verstsiu on 2018/9/1
  * @version 1.0
  */
-class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
+class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
 
   private val blockItems by lazy { mutableListOf<ByteArray>() }
 
