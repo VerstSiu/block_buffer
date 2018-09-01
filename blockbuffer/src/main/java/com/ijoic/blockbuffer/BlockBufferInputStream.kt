@@ -34,8 +34,23 @@ class BlockBufferInputStream(
     return buffer.readBit(currentIndex++)
   }
 
+  override fun read(b: ByteArray?, off: Int, len: Int): Int {
+    if (b == null) {
+      return 0
+    }
+    val readCount = buffer.read(b, off, len, currentIndex)
+    currentIndex += readCount
+    return readCount
+  }
+
+  override fun skip(n: Long): Long {
+    val skipCount = Math.min(available().toLong(), n)
+    currentIndex += skipCount.toInt()
+    return skipCount
+  }
+
   override fun available(): Int {
-    return buffer.size
+    return Math.max(buffer.size - currentIndex, 0)
   }
 
   override fun reset() {

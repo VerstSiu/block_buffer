@@ -31,16 +31,6 @@ class BlockBufferOutputStream(private val buffer: BlockBuffer): OutputStream() {
 
   override fun write(b: Int) {
     buffer.writeBit(currentIndex++, b)
-    println("bbos > write bit")
-  }
-
-  override fun write(b: ByteArray?) {
-    if (b == null) {
-      return
-    }
-    buffer.write(b)
-    currentIndex += b.size
-    println("bbos > write bytes: src - ${b.size}")
   }
 
   override fun write(b: ByteArray?, off: Int, len: Int) {
@@ -48,7 +38,6 @@ class BlockBufferOutputStream(private val buffer: BlockBuffer): OutputStream() {
       return
     }
     currentIndex += buffer.write(b, off, len)
-    println("bbos > write bytes: src - ${b.size}, offset - $off, length - $len")
   }
 
 }

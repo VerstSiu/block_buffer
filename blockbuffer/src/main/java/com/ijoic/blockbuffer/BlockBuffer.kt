@@ -173,6 +173,94 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
   }
 
   /**
+   * Read byte content.
+   *
+   * @param b buffer.
+   * @param offset offset.
+   * @param length length.
+   * @param startPos start position.
+   * @return real read length.
+   */
+  internal fun read(b: ByteArray, offset: Int, length: Int, startPos: Int): Int {
+    val srcSize = b.size
+
+    if (srcSize == 0 || length == 0 || offset >= srcSize) {
+      return 0
+    }
+    val startBlockIndex = startPos / blockSize
+    val startOffset = startPos % blockSize
+
+    val lastBlockIndex = this.lastBlockIndex
+    val lastEnd = this.end
+
+    var srcIndex = offset
+    val srcEnd = Math.min(srcSize, offset + length)
+
+    var readIndex = startBlockIndex
+    var readCount: Int
+    var readCountMax: Int
+
+    while(true) {
+      if (readIndex == startBlockIndex) {
+        // read first block
+        val block = getBlock(readIndex)
+        readCountMax = srcEnd - srcIndex
+
+        if (startBlockIndex == lastBlockIndex) {
+          if (startOffset < lastEnd) {
+            readCount = Math.min(readCountMax, lastEnd - startOffset)
+            srcIndex += b.fill(block, startOffset, srcIndex, readCount)
+          }
+          break
+        }
+
+        if (startOffset + readCountMax <= blockSize) {
+          srcIndex += b.fill(block, startOffset, srcIndex, readCountMax)
+          break
+        }
+
+        srcIndex += b.fill(block, startOffset, srcIndex, blockSize - startOffset)
+
+      } else if (readIndex < startBlockIndex) {
+        // read middle block(not last block)
+        val block = getBlock(readIndex)
+        readCountMax = srcEnd - srcIndex
+
+        if (readCountMax <= blockSize) {
+          srcIndex += b.fill(block, 0, srcIndex, readCountMax)
+          break
+        }
+
+        srcIndex += b.fill(block, 0, srcIndex, blockSize)
+
+      } else if (readIndex == lastBlockIndex) {
+        // read last block
+        val block = getBlock(readIndex)
+        readCountMax = srcEnd - srcIndex
+
+        readCount = Math.min(readCountMax, lastEnd)
+        srcIndex += b.fill(block, startOffset, srcIndex, readCount)
+
+      } else {
+        break
+      }
+
+      ++readIndex
+    }
+    return srcIndex - offset
+  }
+
+  private fun ByteArray.fill(src: ByteArray, srcOffset: Int, offset: Int, size: Int): Int {
+    var copyIndex = 0
+
+    while(copyIndex < size) {
+      this[offset + copyIndex] = src[srcOffset + copyIndex]
+      ++copyIndex
+    }
+    return size
+  }
+
+  /**
    * Write bit to current byte content.
    *
    * @param index index.
