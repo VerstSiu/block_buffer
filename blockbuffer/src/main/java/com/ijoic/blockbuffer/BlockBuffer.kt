@@ -230,7 +230,7 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
         ++blockIndex
       }
 
-      writeSize = Math.min(srcSize - srcIndex, blockSize - end)
+      writeSize = Math.min(srcEnd - srcIndex, blockSize - end)
       writeBlock = getBlock(blockIndex)
       writeIndex = 0
 
