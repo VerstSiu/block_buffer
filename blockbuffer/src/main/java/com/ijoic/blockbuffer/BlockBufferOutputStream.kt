@@ -17,6 +17,7 @@
  */
 package com.ijoic.blockbuffer
 
+import android.util.Log
 import java.io.OutputStream
 
 /**
@@ -31,14 +32,16 @@ class BlockBufferOutputStream(private val buffer: BlockBuffer): OutputStream() {
 
   override fun write(b: Int) {
     buffer.writeBit(currentIndex++, b)
+    Log.i("bbos", "write bit")
   }
 
   override fun write(b: ByteArray?) {
     if (b == null) {
       return
     }
-    currentIndex += b.size
     buffer.write(b)
+    currentIndex += b.size
+    Log.i("bbos", "write bytes: src - ${b.size}")
   }
 
   override fun write(b: ByteArray?, off: Int, len: Int) {
@@ -46,6 +49,7 @@ class BlockBufferOutputStream(private val buffer: BlockBuffer): OutputStream() {
       return
     }
     currentIndex += buffer.write(b, off, len)
+    Log.i("bbos", "write bytes: src - ${b.size}, offset - $off, length - $len")
   }
 
 }
