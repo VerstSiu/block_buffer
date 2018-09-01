@@ -33,15 +33,29 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
 
   private val blockItems by lazy { mutableListOf<ByteArray>() }
 
-  private var lastBlockIndex = 0
+  /**
+   * Last block index.
+   */
+  var lastBlockIndex = 0
+    private set
+
   private var end = 0
 
   /**
    * Read byte contents.
    *
-   * @param func read callback: fun(byteContent, size).
+   * @param func read callback: fun(byteContent).
    */
   fun read(func: (ByteArray) -> Unit) {
+    readIndexed { it, _ -> func(it) }
+  }
+
+  /**
+   * Read byte contents.
+   *
+   * @param func read callback: fun(byteContent, index).
+   */
+  fun readIndexed(func: (ByteArray, Int) -> Unit) {
     val blockIndex = lastBlockIndex
     val end = this.end
 
@@ -49,14 +63,14 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
 
     while(true) {
       when {
-        readIndex < blockIndex -> func.invoke(getBlock(readIndex))
+        readIndex < blockIndex -> func.invoke(getBlock(readIndex), readIndex)
         readIndex == blockIndex -> {
           val block = getBlock(readIndex)
 
           if (end >= blockSize) {
-            func.invoke(block)
+            func.invoke(block, readIndex)
           } else if (end > 0) {
-            func.invoke(Arrays.copyOfRange(block, 0, end))
+            func.invoke(Arrays.copyOfRange(block, 0, end), readIndex)
           }
           return
         }
