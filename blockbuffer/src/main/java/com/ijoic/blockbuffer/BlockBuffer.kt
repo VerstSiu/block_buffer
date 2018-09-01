@@ -147,6 +147,51 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
   }
 
   /**
+   * Returns bit content for specific index.
+   *
+   * @param index read index.
+   */
+  internal fun readBit(index: Int): Int {
+    if (index >= 0) {
+      val blockIndex = index / blockSize
+      val offset = index % blockSize
+
+      val block = blockItems.getOrNull(blockIndex)
+
+      if (block != null) {
+        when {
+          blockIndex < lastBlockIndex -> return block.readBit(offset)
+          blockIndex == lastBlockIndex && offset < end -> return block.readBit(offset)
+        }
+      }
+    }
+    return -1
+  }
+
+  private fun ByteArray.readBit(pos: Int): Int {
+    return this[pos].toInt() and 0xFF
+  }
+
+  /**
+   * Write bit to current byte content.
+   *
+   * @param index index.
+   * @param b bit.
+   */
+  internal fun writeBit(index: Int, b: Int) {
+    if (index >= 0) {
+      val blockIndex = index / blockSize
+      val offset = index % blockSize
+
+      val block = getBlock(index)
+      block[offset] = b.toByte()
+
+      lastBlockIndex = blockIndex
+      end = offset + 1
+    }
+  }
+
+  /**
    * Write byte content.
    *
    * @param content byte content.
