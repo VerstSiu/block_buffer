@@ -156,7 +156,7 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
       return
     }
     var blockIndex = this.lastBlockIndex
-    var offset = this.end - 1
+    var end = this.end
 
     val srcSize = content.size
     var srcIndex = 0
@@ -166,20 +166,20 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
     var writeBlock: ByteArray
 
     while(true) {
-      if (offset + 1 >= blockSize) {
-        offset = 0
+      if (end >= blockSize) {
+        end = 0
         ++blockIndex
       }
 
-      writeSize = Math.min(srcSize - srcIndex, blockSize - offset + 1)
+      writeSize = Math.min(srcSize - srcIndex, blockSize - end)
       writeBlock = getBlock(blockIndex)
       writeIndex = 0
 
       while(writeIndex < writeSize) {
-        writeBlock[offset + writeIndex] = content[srcIndex + writeIndex]
+        writeBlock[end + writeIndex] = content[srcIndex + writeIndex]
         ++writeIndex
       }
-      offset += writeSize
+      end += writeSize
       srcIndex += writeSize
 
       if (srcIndex >= srcSize) {
@@ -187,7 +187,7 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
       }
     }
     this.lastBlockIndex = blockIndex
-    this.end = offset + 1
+    this.end = end
   }
 
   private fun getBlock(@IntRange(from = 0) index: Int): ByteArray {
