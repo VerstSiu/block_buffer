@@ -18,6 +18,7 @@
 package com.ijoic.blockbuffer
 
 import android.support.annotation.IntRange
+import java.io.ByteArrayOutputStream
 import java.util.*
 
 /**
@@ -219,6 +220,32 @@ class BlockBuffer(@IntRange(from = 1) private val blockSize: Int) {
           else -> (blockIndex - 1) * blockSize + end
         }
       }
+
+  /**
+   * Returns byte array of current byte content.
+   */
+  fun toByteArray(): ByteArray {
+    val baos = ByteArrayOutputStream()
+
+    try {
+      read { baos.write(it) }
+
+      val result = baos.toByteArray()
+      baos.reset()
+      return result
+
+    } catch (e: Exception) {
+      e.printStackTrace()
+    } finally {
+
+      try {
+        baos.close()
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
+    return byteArrayOf()
+  }
 
   override fun toString(): String {
     val sb = StringBuilder()
