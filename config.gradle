@@ -1,0 +1,20 @@
+ext {
+
+    compileSdkVersion = 27
+    minSdkVersion = 15
+    targetSdkVersion = 27
+    versionCode = 1
+    versionName = "1.0"
+
+    support_version = "27.1.1"
+
+    depend_kotlin = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    depend_support_app_compat_v7 = "com.android.support:appcompat-v7:$support_version"
+    depend_support_constraintLayout = 'com.android.support.constraint:constraint-layout:1.1.2'
+
+    depend_junit = 'junit:junit:4.12'
+    depend_support_test_runner = 'com.android.support.test:runner:1.0.2'
+    depend_support_test_expressco = 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+}
