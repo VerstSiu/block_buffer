@@ -31,4 +31,6 @@ dependencies {
     testImplementation project.depend_junit
     androidTestImplementation project.depend_support_test_runner
     androidTestImplementation project.depend_support_test_expressco
+
+    testProvided files('exLibs/commons-io-2.4.jar')
 }

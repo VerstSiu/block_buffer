@@ -36,11 +36,15 @@ class BlockBufferInputStream(
 
   override fun read(b: ByteArray?, off: Int, len: Int): Int {
     if (b == null) {
-      return 0
+      return READ_LENGTH_EOF
     }
     val readCount = buffer.read(b, off, len, currentIndex)
     currentIndex += readCount
-    return readCount
+
+    return when(readCount) {
+      0 -> READ_LENGTH_EOF
+      else -> readCount
+    }
   }
 
   override fun skip(n: Long): Long {
@@ -56,5 +60,9 @@ class BlockBufferInputStream(
   override fun reset() {
     super.reset()
     currentIndex = 0
+  }
+
+  private companion object {
+    private const val READ_LENGTH_EOF = -1
   }
 }
