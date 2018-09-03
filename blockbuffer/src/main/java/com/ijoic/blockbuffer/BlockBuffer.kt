@@ -368,7 +368,7 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
         return when {
           blockIndex < 0 -> 0
           blockIndex == 0 -> end
-          else -> (blockIndex - 1) * blockSize + end
+          else -> blockIndex * blockSize + end
         }
       }
 
