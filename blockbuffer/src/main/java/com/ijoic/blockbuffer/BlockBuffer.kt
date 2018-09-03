@@ -81,29 +81,32 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
   }
 
   /**
-   * Read byte contents.
+   * Copy byte buffer.
    *
+   * @param dst destination.
    * @param offset offset.
    * @param size size.
-   * @param func read callback: fun(byteContent, size).
    */
-  fun read(@IntRange(from = 0) offset: Int, size: Int?, func: (ByteArray) -> Unit) {
+  fun copy(dst: BlockBuffer, @IntRange(from = 0) offset: Int = 0, size: Int? = null) {
+    dst.reset()
+
     var readSize = when {
       size == null -> this.size - offset
       size <= 0 -> 0
-      else -> size // 144
+      else -> Math.min(size, this.size - offset)
     }
 
     if (readSize <= 0) {
       return
     }
-    val startBlockIndex = offset / blockSize // 0
-    val startOffset = offset % blockSize // 4
+    val startBlockIndex = offset / blockSize
+    val startOffset = offset % blockSize
 
-    val lastBlockIndex = lastBlockIndex // 0
-    val lastEnd = this.end // 148
+    val lastBlockIndex = lastBlockIndex
+    val lastEnd = this.end
 
-    var readIndex = startBlockIndex // 0
+    var readIndex = startBlockIndex
+    var readCount: Int
 
     while(true) {
       when {
@@ -111,43 +114,35 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
           val block = getBlock(readIndex)
 
           if (startBlockIndex == lastBlockIndex) {
-            if (startOffset < lastEnd) { // 4 < 148
-              func.invoke(Arrays.copyOfRange(block, startOffset, Math.min(startOffset + readSize, lastEnd)))
+            if (startOffset < lastEnd) {
+              dst.write(block, startOffset, Math.min(readSize, lastEnd - startOffset))
             }
             return
           }
 
           if (startOffset + readSize <= blockSize) {
-            func.invoke(Arrays.copyOfRange(block, startOffset, startOffset + readSize))
+            dst.write(block, startOffset, readSize)
             return
           }
 
-          if (startOffset == 0) {
-            func.invoke(block)
-          } else {
-            func.invoke(Arrays.copyOfRange(block, startOffset, blockSize))
-          }
-          readSize -= blockSize - startOffset
+          readCount = blockSize - startOffset
+          dst.write(block, startOffset, readCount)
+          readSize -= readCount
         }
         readIndex < lastBlockIndex -> {
           val block = getBlock(readIndex)
 
-          if (readSize >= blockSize) {
-            func.invoke(block)
-            readSize -= blockSize
-          } else {
-            func.invoke(Arrays.copyOfRange(block, 0, readSize));
+          if (readSize <= blockSize) {
+            dst.write(block, 0, readSize)
             return
           }
+          dst.write(block, 0, blockSize)
+          readSize -= blockSize
         }
         readIndex == lastBlockIndex -> {
           val block = getBlock(readIndex)
 
-          if (readSize == blockSize && lastEnd == blockSize) {
-            func.invoke(block)
-          } else if (readSize > 0 && lastEnd > 0) {
-            func.invoke(Arrays.copyOfRange(block, 0, Math.min(readSize, lastEnd)))
-          }
+          dst.write(block, 0, Math.min(readSize, lastEnd))
           return
         }
         else -> return
