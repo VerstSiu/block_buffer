@@ -317,27 +317,20 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
     val srcEnd = Math.min(srcSize, offset + length)
 
     var writeSize: Int
-    var writeIndex: Int
-
     var writeBlock: ByteArray
 
     while(true) {
+      writeSize = Math.min(srcEnd - srcIndex, blockSize - end)
+      writeBlock = getBlock(blockIndex)
+
+      writeBlock.fill(content, srcIndex, end, writeSize)
+      end += writeSize
+      srcIndex += writeSize
+
       if (end >= blockSize) {
         end = 0
         ++blockIndex
       }
-
-      writeSize = Math.min(srcEnd - srcIndex, blockSize - end)
-      writeBlock = getBlock(blockIndex)
-      writeIndex = 0
-
-      while(writeIndex < writeSize) {
-        writeBlock[end + writeIndex] = content[srcIndex + writeIndex]
-        ++writeIndex
-      }
-      end += writeSize
-      srcIndex += writeSize
-
       if (srcIndex >= srcEnd) {
         break
       }
