@@ -193,8 +193,8 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
   internal fun read(b: ByteArray, offset: Int, length: Int, startPos: Int): Int {
     val srcSize = b.size
 
-    if (srcSize == 0 || length == 0 || offset >= srcSize) {
-      return 0
+    if (startPos >= size) {
+      return -1
     }
     val startBlockIndex = startPos / blockSize
     val startOffset = startPos % blockSize
