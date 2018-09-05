@@ -32,17 +32,20 @@ class BlockBufferInputStream(
 
   override fun read(): Int {
     println(">>>> block buffer >>>> read bit")
+    println(">>>> block buffer >>>> return ${buffer.readBit(currentIndex)}")
     return buffer.readBit(currentIndex++)
   }
 
   override fun read(b: ByteArray?, off: Int, len: Int): Int {
     println(">>>> block buffer >>>> read bytes: size - ${b?.size}, off - $off, len - $len")
     if (b == null) {
+      println(">>>> block buffer >>>> read bytes: return -1")
       return READ_LENGTH_EOF
     }
     val readCount = buffer.read(b, off, len, currentIndex)
     currentIndex += readCount
 
+    println(">>>> block buffer >>>> read bytes: return ${if (readCount == 0) -1 else readCount}")
     return when(readCount) {
       0 -> READ_LENGTH_EOF
       else -> readCount
