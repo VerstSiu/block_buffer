@@ -190,27 +190,32 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
    * @param startPos start position.
    * @return real read length.
    */
-  internal fun read(b: ByteArray, offset: Int, length: Int, startPos: Int): Int {
-    val srcSize = b.size
+  internal fun read(b: ByteArray?, offset: Int, length: Int, startPos: Int): Int { // - 0 512 10
+    b ?: throw NullPointerException()
 
-    if (startPos >= size) {
+    if (offset < 0 || length < 0 || length > b.size - offset) {
+      throw IndexOutOfBoundsException()
+    }
+    val srcSize = b.size // 512
+
+    if (startPos >= size) { // x
       return -1
     }
-    val startBlockIndex = startPos / blockSize
-    val startOffset = startPos % blockSize
+    val startBlockIndex = startPos / blockSize // 0
+    val startOffset = startPos % blockSize // 10
 
-    val lastBlockIndex = this.lastBlockIndex
-    val lastEnd = this.end
+    val lastBlockIndex = this.lastBlockIndex // 1
+    val lastEnd = this.end // 227
 
-    var srcIndex = offset
-    val srcEnd = Math.min(srcSize, offset + length)
+    var srcIndex = offset // 0
+    val srcEnd = Math.min(srcSize, offset + length) // 512
 
-    var readIndex = startBlockIndex
+    var readIndex = startBlockIndex // 0
     var readCount: Int
     var readCountMax: Int
 
     while(true) {
-      if (readIndex == startBlockIndex) {
+      if (readIndex == startBlockIndex) { // *
         // read first block
         val block = getBlock(readIndex)
         readCountMax = srcEnd - srcIndex
@@ -248,7 +253,7 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
         readCountMax = srcEnd - srcIndex
 
         readCount = Math.min(readCountMax, lastEnd)
-        srcIndex += b.fill(block, startOffset, srcIndex, readCount)
+        srcIndex += b.fill(block, 0, srcIndex, readCount)
 
       } else {
         break

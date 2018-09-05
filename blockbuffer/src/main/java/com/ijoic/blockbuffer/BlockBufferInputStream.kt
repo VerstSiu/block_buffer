@@ -29,33 +29,23 @@ class BlockBufferInputStream(
     private val buffer: BlockBuffer): InputStream() {
 
   private var currentIndex = 0
-  private var eof = false
 
   override fun read(): Int {
     return buffer.readBit(currentIndex++)
   }
 
   override fun read(b: ByteArray?, off: Int, len: Int): Int {
-    if (eof) {
-      return -1
-    }
-    b ?: throw NullPointerException()
-
-    if (off < 0 || len < 0 || len > b.size - off) {
-      throw IndexOutOfBoundsException()
-    }
     val readCount = buffer.read(b, off, len, currentIndex)
 
-    when(readCount) {
-      -1 -> eof = true
-      else -> currentIndex += readCount
+    if (readCount > 0) {
+      currentIndex += readCount
     }
 
     return readCount
   }
 
   override fun skip(n: Long): Long {
-    val skipCount = Math.min(available().toLong(), n)
+    val skipCount = Math.min(available().toLong(), Math.max(n, 0))
     currentIndex += skipCount.toInt()
     return skipCount
   }
@@ -65,9 +55,7 @@ class BlockBufferInputStream(
   }
 
   override fun reset() {
-    super.reset()
     currentIndex = 0
-    eof = false
   }
 
 }
