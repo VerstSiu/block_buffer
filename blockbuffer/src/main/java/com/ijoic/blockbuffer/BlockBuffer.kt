@@ -285,7 +285,7 @@ class BlockBuffer(@IntRange(from = 1) val blockSize: Int) {
       val blockIndex = index / blockSize
       val offset = index % blockSize
 
-      val block = getBlock(index)
+      val block = getBlock(blockIndex)
       block[offset] = b.toByte()
 
       lastBlockIndex = blockIndex
