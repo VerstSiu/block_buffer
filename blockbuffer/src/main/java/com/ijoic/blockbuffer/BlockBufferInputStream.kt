@@ -31,10 +31,12 @@ class BlockBufferInputStream(
   private var currentIndex = 0
 
   override fun read(): Int {
+    println(">>>> block buffer >>>> read bit")
     return buffer.readBit(currentIndex++)
   }
 
   override fun read(b: ByteArray?, off: Int, len: Int): Int {
+    println(">>>> block buffer >>>> read bytes: size - ${b?.size}, off - $off, len - $len")
     if (b == null) {
       return READ_LENGTH_EOF
     }
@@ -48,6 +50,7 @@ class BlockBufferInputStream(
   }
 
   override fun skip(n: Long): Long {
+    println(">>>> block buffer >>>> skip: n - $n")
     val skipCount = Math.min(available().toLong(), n)
     currentIndex += skipCount.toInt()
     return skipCount
