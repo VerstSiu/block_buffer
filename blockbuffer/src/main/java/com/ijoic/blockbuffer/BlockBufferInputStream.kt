@@ -32,8 +32,6 @@ class BlockBufferInputStream(
   private var eof = false
 
   override fun read(): Int {
-    println(">>>> block buffer >>>> read bit")
-    println(">>>> block buffer >>>> return ${buffer.readBit(currentIndex)}")
     return buffer.readBit(currentIndex++)
   }
 
@@ -46,7 +44,6 @@ class BlockBufferInputStream(
     if (off < 0 || len < 0 || len > b.size - off) {
       throw IndexOutOfBoundsException()
     }
-    println(">>>> block buffer >>>> read bytes: size - ${b.size}, off - $off, len - $len")
     val readCount = buffer.read(b, off, len, currentIndex)
 
     when(readCount) {
@@ -54,12 +51,10 @@ class BlockBufferInputStream(
       else -> currentIndex += readCount
     }
 
-    println(">>>> block buffer >>>> read bytes: return ${if (readCount == 0) -1 else readCount}")
     return readCount
   }
 
   override fun skip(n: Long): Long {
-    println(">>>> block buffer >>>> skip: n - $n")
     val skipCount = Math.min(available().toLong(), n)
     currentIndex += skipCount.toInt()
     return skipCount
